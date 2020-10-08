@@ -1,5 +1,5 @@
 import DataTypes from 'sequelize'
-//déclare une fonction qu'on exporte par default retournant un modèle User
+//on déclare une fonction qu'on exporte par default retournant un modèle User
 //(d'habitude nom modele au singulier)
 export default (sequelize) => {
     /* parameters of sequelize.define() which defines the model:the name of the
@@ -33,7 +33,7 @@ export default (sequelize) => {
             defaultValue: DataTypes.UUIDV1,
         },
         active: {
-            // est ce que la l'api_key est toujours valide
+            // est ce que l'api_key est toujours valide
             type: DataTypes.BOOLEAN,
             defaultValue: true,
         },

@@ -9,14 +9,15 @@ import { sequelize, User, Message } from './models/db.js'
 try {
     await sequelize.authenticate() // try to authentificate on the database
     console.log('Connection has been established successfully.')
+
+    //ModelName.sync()
     /*ModelName.sync({ alter: true }) checks what is the current state of the
     table in the database (which columns it has, what are their data types,
     etc), and then performs the necessary changes in the table to make it match
-    the model. */
-    /*sequelize.sync() to automatically synchronize all models.
-    await sequelize.sync({ alter: true }); 
-    sync(options) is destructive, so not recommended for production*/
-    await User.sync({ alter: true }) // modify users table schema if something changed
+    the model.sync(options) is destructive, so not recommended for production
+    sequelize.sync() to automatically synchronize all models.
+    await sequelize.sync({ alter: true }); */
+    await User.sync({ alter: true }) // modify users table schema if something changed in model
     await Message.sync({ alter: true }) // same for messages table
 } catch (error) {
     console.error('Unable to connect to the database:', error)
@@ -24,7 +25,7 @@ try {
 }
 
 // Local network configuration
-const IP = '172.18.254.203'
+const IP = '172.18.244.162'
 const PORT = 7777
 
 const app = express()
@@ -38,38 +39,6 @@ const getApiKey = (req, res, next) => {
         res.status(403).json({ code: 403, data: 'No api token' })
     } else {
         next()
-    }
-}
-
-/*Créer un middleware getUserByApiKey, qui interviendra après validateApiKey qui
-attachera à objet req d'express l'objet user. Cet objet user contiendra les
-informations du modèle User: id, username, email, api_key. C'est un middleware
-très pratique, ainsi nous pourrons avoir accès aux informations de l'utilisateur
-qui effectue la requête depuis req.user */
-
-const getUserByApiKey = async (req, res, next) => {
-    const key = req.headers.authorization
-    try {
-        const user = await User.findAll({
-            attributes: ['id', 'username', 'email', 'api_key'],
-            where: {
-                api_key: key,
-            },
-        })
-        // check if empty results then not found
-        if (user.length === 0) {
-            res.status(403).json({
-                code: 403,
-                data: 'Invalid api token',
-            })
-        } else {
-            console.log('USER:', user)
-            //we add property of req.user with the value of user an array of 1 object
-            req.user = user
-            next()
-        }
-    } catch (e) {
-        res.status(500).json({ code: 500, data: 'Internal server error' })
     }
 }
 
@@ -88,7 +57,7 @@ const validateApiKey = async (req, res, next) => {
     try {
         //user is an array with all Objects results (normally 1 element since key is UUID)
         const user = await User.findAll({
-            attributes: ['id', 'username', 'email', 'api_key'],
+            attributes: ['id', 'username', 'email'],
             where: {
                 [Op.and]: [{ api_key: key }, { active: true }],
             },
@@ -114,8 +83,30 @@ const validateApiKey = async (req, res, next) => {
     }
 }
 
-app.use(bodyParser.json()) // to support JSON-encoded bodies
+/*Créer un middleware getUserByApiKey, qui interviendra après validateApiKey qui
+attachera à objet req d'express l'objet user. Cet objet user contiendra les
+informations du modèle User: id, username, email, api_key. C'est un middleware
+très pratique, ainsi nous pourrons avoir accès aux informations de l'utilisateur
+qui effectue la requête depuis req.user */
+
+const getUserByApiKey = async (req, res, next) => {
+    const key = req.headers.authorization
+    try {
+        const user = await User.findAll({
+            attributes: ['id', 'username', 'email', 'api_key'],
+            where: {
+                api_key: key,
+            },
+        })
+        req.user = user
+        next()
+    } catch (e) {
+        res.status(500).json({ code: 500, data: 'Internal server error' })
+    }
+}
+
 app.use(bodyParser.urlencoded({ extended: false })) // to support URL-encoded bodies
+app.use(bodyParser.json()) // to support JSON-encoded bodies
 
 /*
 Endpoint for user registration. Inside API documentation we specify what type of
@@ -141,8 +132,8 @@ app.post('/register', async (req, res) => {
 })
 
 app.use(getApiKey)
-app.use(getUserByApiKey)
 app.use(validateApiKey)
+app.use(getUserByApiKey)
 
 // GET user by id
 app.get('/id/:id', async (req, res) => {
@@ -225,7 +216,8 @@ app.get('/blacklist/id/:id', async (req, res) => {
     const idAdmin = 1
     const idBlacklisted = req.params.id
     const idLoggedIn = req.user[0].dataValues.id
-    if (idLoggedIn == idAdmin) {
+    //on empeche que l'admin se blackliste
+    if (idLoggedIn == idAdmin && idBlacklisted != idAdmin) {
         try {
             await User.update(
                 { active: false },
@@ -269,7 +261,7 @@ app.get('/whitelist/id/:id', async (req, res) => {
             )
             res.json({
                 code: 200,
-                data: `id ${idWhitelisted} has been revalidated`,
+                data: `id ${idWhitelisted} is valid`,
             })
         } catch (e) {
             res.status(500).json({ code: 500, data: 'Internal server error' })

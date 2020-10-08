@@ -17,9 +17,10 @@ const sequelize = new Sequelize('db_api1', 'db_user', 'strongpassword123', {
         // prevent sequelize from adding timestamps createdAt and updatedAt columns in tables
         //timestamps: false,
     },
-    /*By default, Sequelize will log to console every SQL query it performs. logging:false Disables logging */
+    /*By default, Sequelize will log to console every SQL query it performs. logging:false disables logging */
     //logging: false,
 })
+
 //.authenticate() function to test if the connection is OK:
 try {
     await sequelize.authenticate()
