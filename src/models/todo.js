@@ -1,26 +1,24 @@
-//déclare une fonction retournant un modèle Message
 import DataTypes from 'sequelize'
 export default (sequelize) => {
-    const Message = sequelize.define('messages', {
+    const Todo = sequelize.define('todos', {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
         },
-        src: {
+        owner_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        dst: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-
-        content: {
+        task: {
             type: DataTypes.TEXT,
             allowNull: false,
         },
+        done: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
     })
 
-    return Message
+    return Todo
 }

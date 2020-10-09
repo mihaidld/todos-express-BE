@@ -1,11 +1,6 @@
 import DataTypes from 'sequelize'
-//on déclare une fonction qu'on exporte par default retournant un modèle User
-//(d'habitude nom modele au singulier)
+
 export default (sequelize) => {
-    /* parameters of sequelize.define() which defines the model:the name of the
-    table in the database (usually plural) and model attributes = which columns
-    it has (and their data types). If there is no defaultValue the default value
-    of a column is NULL */
     const User = sequelize.define('users', {
         //users est le nom de la table
         id: {
@@ -14,14 +9,8 @@ export default (sequelize) => {
             primaryKey: true,
             autoIncrement: true,
         },
-        username: {
-            // colonne username
-            type: DataTypes.STRING(20),
-            unique: true,
-            allowNull: false,
-        },
-        email: {
-            // colonne email
+        name: {
+            // colonne name
             type: DataTypes.STRING(30),
             unique: true,
             allowNull: false,
@@ -31,11 +20,6 @@ export default (sequelize) => {
             type: DataTypes.UUID,
             unique: true,
             defaultValue: DataTypes.UUIDV1,
-        },
-        active: {
-            // est ce que l'api_key est toujours valide
-            type: DataTypes.BOOLEAN,
-            defaultValue: true,
         },
     })
 

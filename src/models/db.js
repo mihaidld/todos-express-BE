@@ -1,10 +1,10 @@
 import Sequelize from 'sequelize'
-import message from './message.js'
+import todo from './todo.js'
 import user from './user.js'
 
-//exporte un connecteur sequelize et les modèles User et Message
+//exporte un connecteur sequelize et les modèles User et Todo
 export const sequelize = new Sequelize(
-    'db_api1',
+    'db_api_todo',
     'db_user',
     'strongpassword123',
     {
@@ -22,4 +22,4 @@ export const sequelize = new Sequelize(
 )
 //on appelle les fonctions retournant les modeles et exporte les modeles
 export const User = user(sequelize)
-export const Message = message(sequelize)
+export const Todo = todo(sequelize)
