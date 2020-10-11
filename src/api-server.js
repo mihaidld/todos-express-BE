@@ -19,7 +19,7 @@ try {
 }
 
 // Local network configuration
-const IP = '172.18.246.84'
+const IP = '172.18.245.151'
 const PORT = 7777
 
 const app = express()
@@ -31,7 +31,8 @@ const getApiKey = (req, res, next) => {
     if (!key) {
         res.status(403).json({
             code: 403,
-            data: { valid: false, message: 'No api token' },
+            valid: false,
+            data: 'No api token',
         })
     } else {
         next()
@@ -50,10 +51,8 @@ const validateApiKey = async (req, res, next) => {
         if (user.length === 0) {
             res.status(403).json({
                 code: 403,
-                data: {
-                    valid: false,
-                    message: 'Invalid api token, please register',
-                },
+                valid: false,
+                data: 'Invalid api token, please register',
             })
         } else {
             console.log('USER:', user)
@@ -62,7 +61,8 @@ const validateApiKey = async (req, res, next) => {
     } catch (e) {
         res.status(500).json({
             code: 500,
-            data: { valid: false, message: 'Internal server error' },
+            valid: false,
+            data: 'Internal server error',
         })
     }
 }
@@ -82,7 +82,8 @@ const getUserByApiKey = async (req, res, next) => {
     } catch (e) {
         res.status(500).json({
             code: 500,
-            data: { valid: false, message: 'Internal server error' },
+            valid: false,
+            data: 'Internal server error',
         })
     }
 }
@@ -91,12 +92,9 @@ const getUserByApiKey = async (req, res, next) => {
 /* app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', '*')
     res.header('Access-Control-Allow-Methods', 'DELETE, POST, GET, OPTIONS')
-    res.header('Access-Control-Allow-Headers', 'Content-Type')
-    res.header('Access-Control-Allow-Headers', 'authorization')
-    res.header('Access-Control-Allow-Headers', 'Authorization')
-    next()
+    res.header('Access-Control-Allow-Headers', 'Content-Type', 'authorization')
+        next()
 }) */
-
 app.use(cors())
 app.options('*', cors())
 
@@ -105,21 +103,19 @@ app.use(bodyParser.json()) // to support JSON-encoded bodies
 
 /*
 Endpoint for user registration. Inside API documentation we specify what type of
-data we expect as input:
-{
-    "name": string
-}
+data we expect as input from client:{"name": "string"}
 */
 app.post('/register', async (req, res) => {
     const name = req.body.name
     try {
         const user = await User.create({ name: name })
-        res.json({ code: 200, data: { valid: true, user } })
+        res.json({ code: 200, valid: true, data: user })
     } catch (e) {
         console.log('Error', e)
         res.status(500).json({
             code: 500,
-            data: { valid: false, message: 'Internal server error' },
+            valid: false,
+            data: 'Internal server error',
         })
     }
 })
@@ -128,7 +124,8 @@ app.use(getApiKey)
 app.use(validateApiKey)
 app.use(getUserByApiKey)
 
-/*Expect from client {"task": string}*/
+/*Endpoint for creating a task. Inside API documentation we specify what type of
+data we expect as input from client: {"task": "string"}*/
 //Create a todo
 app.post('/create', async (req, res) => {
     console.log(req.user)
@@ -154,7 +151,8 @@ app.post('/create', async (req, res) => {
     }
 })
 
-/*Expect from client /delete/:id*/
+/*Endpoint for deleting a task. Inside API documentation we specify what type of
+data we expect as input from client: /delete/:id*/
 //Delete a todo
 app.post('/delete/:id', async (req, res) => {
     const idTask = req.params.id
@@ -195,7 +193,8 @@ app.post('/delete/:id', async (req, res) => {
     }
 })
 
-/*Expect from client /done/:id*/
+/*Endpoint for setting a task status to done. Inside API documentation we specify what type of
+data we expect as input from client: /done/:id*/
 //Change status of a todo to done
 app.post('/done/:id', async (req, res) => {
     const idTask = req.params.id
@@ -239,7 +238,8 @@ app.post('/done/:id', async (req, res) => {
     }
 })
 
-/*Expect from client /undone/:id*/
+/*Endpoint for setting a task status to undone. Inside API documentation we specify what type of
+data we expect as input from client: /undone/:id*/
 //Change status of a todo to undone
 app.post('/undone/:id', async (req, res) => {
     const idTask = req.params.id
@@ -285,7 +285,7 @@ app.post('/undone/:id', async (req, res) => {
 
 /* Expect from client /list/:all to show all todos, /list/:undone to show all undone todos, /list/:done to show all todos done */
 // GET todos by filter
-app.get('/list/:filter', async (req, res) => {
+/* app.get('/list/:filter', async (req, res) => {
     const filter = req.params.filter
     const idLoggedIn = req.user[0].dataValues.id
     try {
@@ -327,6 +327,31 @@ app.get('/list/:filter', async (req, res) => {
                 data: todos,
             })
         }
+    } catch (e) {
+        res.status(500).json({
+            valid: false,
+            code: 500,
+            data: 'Internal server error',
+        })
+    }
+}) */
+
+/* Endpoint for showing all tasks (filtering the tasks done/undone
+is done on front-end side). Inside API documentation we specify what type of
+data we expect as input from client: /list */
+app.get('/list', async (req, res) => {
+    const idLoggedIn = req.user[0].dataValues.id
+    try {
+        let todos = []
+        todos = await Todo.findAll({
+            where: { owner_id: idLoggedIn },
+            order: [['updatedAt', 'DESC']],
+        })
+        res.json({
+            valid: true,
+            code: 200,
+            data: todos,
+        })
     } catch (e) {
         res.status(500).json({
             valid: false,
