@@ -19,7 +19,7 @@ try {
 }
 
 // Local network configuration
-const IP = '172.18.245.151'
+const IP = '192.168.1.18'
 const PORT = 7777
 
 const app = express()
