@@ -6,7 +6,7 @@ _to be used with todos-react-FE https://github.com/mihaidld/todos-react-FE for f
 
 -   back-end for TODO List app using `express` and middlewares
 -   database `Postgresql`
--   connexion with `Squelize`
+-   connexion with `Sequelize`
 -   simple user registration and authentication using API Keys
 
 ## Routes
@@ -37,7 +37,7 @@ In PostgreSQL create user `db_user` and database `db_api_todo`:
 postgres=> CREATE ROLE db_user WITH LOGIN PASSWORD 'strongpassword123';
 postgres=> ALTER ROLE db_user CREATEDB;
 postgres=> CREATE DATABASE db_api_todo;
-postgres=> \q;
+postgres=> \q
 ```
 
 ```bash
