@@ -1,6 +1,6 @@
 # todos-express-BE
 
-_to be used with todos-FE https://github.com/mihaidld/todos-FE for front-end side_
+_to be used with todos-react-FE https://github.com/mihaidld/todos-react-FE for front-end side_
 
 ## Features
 
